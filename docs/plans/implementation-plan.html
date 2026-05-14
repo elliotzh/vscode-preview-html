@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Implementation Plan — Preview HTML Extension</title>
+	<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+	<script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+	<style>
+		:root { --pico-font-size: 15px; }
+		body { padding: 2rem; }
+		.phase-header {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin-top: 3rem;
+		}
+		.phase-number {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			color: white;
+			font-weight: 700;
+			font-size: 1rem;
+			flex-shrink: 0;
+		}
+		.task-card {
+			border: 1px solid var(--pico-muted-border-color);
+			border-radius: 8px;
+			padding: 1.5rem;
+			margin: 1rem 0;
+			position: relative;
+			transition: box-shadow 0.2s;
+		}
+		.task-card:hover {
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		}
+		.task-card h4 { margin-top: 0; }
+		.task-badge {
+			display: inline-block;
+			padding: 0.15em 0.5em;
+			border-radius: 4px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-right: 0.5rem;
+		}
+		.scope-small { background: #d4edda; color: #155724; }
+		.scope-medium { background: #fff3cd; color: #856404; }
+		.files-list {
+			font-size: 0.85em;
+			background: var(--pico-card-background-color);
+			padding: 0.75rem 1rem;
+			border-radius: 6px;
+			margin-top: 0.75rem;
+		}
+		.files-list code { font-size: 0.9em; }
+		.checkpoint {
+			border-left: 4px solid #667eea;
+			padding: 1rem 1.5rem;
+			margin: 2rem 0;
+			background: rgba(102, 126, 234, 0.05);
+			border-radius: 0 8px 8px 0;
+		}
+		.risk-table td:first-child { font-weight: 600; }
+		.hero {
+			text-align: center;
+			padding: 3rem 1rem;
+			margin-bottom: 2rem;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			border-radius: 12px;
+			color: white;
+		}
+		.hero h1 { color: white; margin-bottom: 0.5rem; }
+		.hero p { color: rgba(255,255,255,0.8); }
+		.architecture-decisions {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 1rem;
+			margin: 1.5rem 0;
+		}
+		.arch-card {
+			padding: 1rem;
+			border-radius: 8px;
+			background: var(--pico-card-background-color);
+			border: 1px solid var(--pico-muted-border-color);
+		}
+		.arch-card strong { color: var(--pico-primary); }
+		.mermaid { margin: 1.5rem 0; }
+		.progress-bar {
+			display: flex;
+			gap: 2px;
+			margin: 1rem 0;
+		}
+		.progress-segment {
+			flex: 1;
+			height: 8px;
+			border-radius: 4px;
+			background: var(--pico-muted-border-color);
+			transition: background 0.3s;
+		}
+		.progress-segment.done { background: linear-gradient(135deg, #667eea, #764ba2); }
+	</style>
+</head>
+<body>
+	<main class="container">
+		<div class="hero">
+			<h1>Implementation Plan</h1>
+			<p>Preview HTML — VS Code Extension</p>
+			<div class="progress-bar" id="progress">
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+				<div class="progress-segment done"></div>
+			</div>
+			<small style="color: rgba(255,255,255,0.6);">11 / 11 tasks complete</small>
+		</div>
+
+		<section>
+			<h2>Overview</h2>
+			<p>Build a VS Code extension that registers a Custom Editor as the default viewer for <code>.html</code> files. Users see rendered HTML on open (preview-first), with a toolbar button to toggle to the standard text editor. The preview live-updates on every document change with debouncing.</p>
+		</section>
+
+		<section>
+			<h2>Architecture Decisions</h2>
+			<div class="architecture-decisions">
+				<div class="arch-card">
+					<strong>Custom Text Editor API</strong>
+					<p>Over Webview Panel — gives us default-editor registration, proper tab lifecycle, and native toggle support.</p>
+				</div>
+				<div class="arch-card">
+					<strong>TypeScript + esbuild</strong>
+					<p>Standard VS Code extension toolchain, fast bundling, minimal config.</p>
+				</div>
+				<div class="arch-card">
+					<strong>No local server</strong>
+					<p>Render HTML directly in the webview, rewrite asset paths with <code>asWebviewUri()</code>.</p>
+				</div>
+				<div class="arch-card">
+					<strong>Retain webview context</strong>
+					<p><code>retainContextWhenHidden: true</code> for instant tab switching without re-renders.</p>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h2>Task Flow</h2>
+			<pre class="mermaid">
+graph LR
+    T1[Task 1: Scaffold] --> T2[Task 2: Custom Editor]
+    T2 --> T3[Task 3: Render HTML]
+    T3 --> T4[Task 4: Assets]
+    T3 --> T5[Task 5: Live Update]
+    T2 --> T6[Task 6: Toggle → Source]
+    T6 --> T7[Task 7: Toggle → Preview]
+    T3 --> T8[Task 8: Theming]
+    T7 --> T9[Task 9: Metadata]
+    T7 --> T10[Task 10: Config]
+    T5 --> T11[Task 11: Tests]
+    T7 --> T11
+			</pre>
+		</section>
+
+		<!-- Phase 1 -->
+		<div class="phase-header">
+			<span class="phase-number">1</span>
+			<h2 style="margin:0">Project Scaffold</h2>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 1: Initialize extension project</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Set up the VS Code extension project with TypeScript, esbuild bundler, and the standard extension structure.</p>
+			<ul>
+				<li><code>package.json</code> with extension manifest targeting latest stable</li>
+				<li>TypeScript compiles without errors</li>
+				<li>Extension activates and can run a test command</li>
+				<li><code>.vscodeignore</code> and esbuild config produce a bundled <code>.vsix</code></li>
+			</ul>
+			<div class="files-list">
+				<strong>Files:</strong>
+				<code>package.json</code>, <code>tsconfig.json</code>, <code>src/extension.ts</code>, <code>.vscodeignore</code>, <code>.gitignore</code>
+			</div>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 2: Register Custom Editor provider</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Implement a <code>CustomTextEditorProvider</code> that registers for <code>*.html</code> files with default priority.</p>
+			<ul>
+				<li>Opening a <code>.html</code> file shows the custom editor by default</li>
+				<li>The webview displays a placeholder message</li>
+				<li><code>package.json</code> contributes <code>customEditors</code></li>
+			</ul>
+			<div class="files-list">
+				<strong>Files:</strong>
+				<code>package.json</code>, <code>src/extension.ts</code>, <code>src/htmlPreviewEditorProvider.ts</code>
+			</div>
+		</div>
+
+		<!-- Phase 2 -->
+		<div class="phase-header">
+			<span class="phase-number">2</span>
+			<h2 style="margin:0">Core Preview</h2>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 3: Render HTML content in webview</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Read the <code>TextDocument</code> content and render it inside the webview. The HTML file's content becomes the webview's HTML body.</p>
+			<ul>
+				<li>Opening an HTML file shows its rendered content</li>
+				<li>Respects <code>&lt;head&gt;</code>, <code>&lt;style&gt;</code>, etc.</li>
+				<li>Inline <code>&lt;script&gt;</code> tags execute</li>
+			</ul>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 4: Resolve relative assets</h4>
+			<span class="task-badge scope-medium">Medium</span>
+			<p>Rewrite relative paths in the HTML to use <code>webview.asWebviewUri()</code> so they load correctly from disk.</p>
+			<ul>
+				<li>Relative <code>&lt;img src="./image.png"&gt;</code> displays</li>
+				<li>Relative <code>&lt;link href="./style.css"&gt;</code> applies</li>
+				<li>Nested paths (<code>../assets/img.png</code>) resolve correctly</li>
+				<li><code>localResourceRoots</code> set to file's parent + workspace folders</li>
+			</ul>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 5: Live update on document change</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Listen to <code>onDidChangeTextDocument</code> and re-render with a 300ms debounce.</p>
+			<ul>
+				<li>Editing the file updates the preview within ~300ms</li>
+				<li>Rapid changes don't cause excessive re-renders</li>
+				<li>External file writes trigger an update</li>
+			</ul>
+		</div>
+
+		<div class="checkpoint">
+			<strong>Checkpoint: Core Preview</strong>
+			<ul>
+				<li>Opening any <code>.html</code> file shows rendered preview by default</li>
+				<li>Relative assets load correctly</li>
+				<li>Editing the file externally updates the preview live</li>
+				<li>Extension builds and loads without errors</li>
+			</ul>
+		</div>
+
+		<!-- Phase 3 -->
+		<div class="phase-header">
+			<span class="phase-number">3</span>
+			<h2 style="margin:0">Toggle &amp; UX</h2>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 6: Toggle button — preview to source</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Add an editor title bar button that switches from the custom editor to the default text editor.</p>
+			<ul>
+				<li>"Open Source" icon button in editor title bar</li>
+				<li>Clicking opens the file in the standard text editor</li>
+				<li>Uses codicon <code>$(code)</code></li>
+			</ul>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 7: Toggle button — source to preview</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Add a title bar button when viewing HTML in the text editor to switch back to preview.</p>
+			<ul>
+				<li>"Open Preview" icon button for <code>.html</code> files in text editor</li>
+				<li>Uses codicon <code>$(open-preview)</code></li>
+				<li>Only appears for HTML files (<code>resourceLangId == html</code>)</li>
+			</ul>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 8: Theme-aware webview background</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Set the webview's background to match the current VS Code theme.</p>
+			<ul>
+				<li>No white flash in dark mode</li>
+				<li>Uses <code>--vscode-editor-background</code> CSS variable</li>
+				<li>Theme changes reflected on next render</li>
+			</ul>
+		</div>
+
+		<div class="checkpoint">
+			<strong>Checkpoint: Toggle & UX</strong>
+			<ul>
+				<li>Toggle between preview and source works bidirectionally</li>
+				<li>Buttons appear in the correct context with correct icons</li>
+				<li>Dark/light theme handled gracefully</li>
+			</ul>
+		</div>
+
+		<!-- Phase 4 -->
+		<div class="phase-header">
+			<span class="phase-number">4</span>
+			<h2 style="margin:0">Polish &amp; Publish</h2>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 9: Extension icon, metadata, and README</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Marketplace icon, README, and <code>package.json</code> metadata.</p>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 10: Configuration setting for default editor</h4>
+			<span class="task-badge scope-small">Small</span>
+			<p>Add <code>previewHtml.defaultEditor</code> boolean setting to control default behavior.</p>
+		</div>
+
+		<div class="task-card">
+			<h4>Task 11: End-to-end testing</h4>
+			<span class="task-badge scope-medium">Medium</span>
+			<p>Integration tests using <code>@vscode/test-electron</code> verifying core flows.</p>
+		</div>
+
+		<!-- Risks -->
+		<section>
+			<h2>Risks &amp; Mitigations</h2>
+			<table class="risk-table">
+				<thead>
+					<tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Custom Editor API quirks with undo/redo</td>
+						<td>Low</td>
+						<td>We're read-only in the webview — no undo/redo needed.</td>
+					</tr>
+					<tr>
+						<td>Relative asset rewriting misses edge cases</td>
+						<td>Medium</td>
+						<td>Only rewrite clearly relative paths. Leave absolute URLs untouched.</td>
+					</tr>
+					<tr>
+						<td>Large HTML files cause slow re-renders</td>
+						<td>Medium</td>
+						<td>Debounce at 300ms. Consider incremental patching later.</td>
+					</tr>
+					<tr>
+						<td>Users confused by preview-first behavior</td>
+						<td>Medium</td>
+						<td>Clear README and a setting to disable.</td>
+					</tr>
+					<tr>
+						<td>Scripts in HTML pose security risk</td>
+						<td>Low</td>
+						<td>Webview sandboxed by VS Code. <code>localResourceRoots</code> restricts access.</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+	</main>
+
+	<script>
+		mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+
+		// Animate task cards on scroll
+		const observer = new IntersectionObserver((entries) => {
+			entries.forEach(entry => {
+				if (entry.isIntersecting) {
+					entry.target.style.opacity = '1';
+					entry.target.style.transform = 'translateY(0)';
+				}
+			});
+		}, { threshold: 0.1 });
+
+		document.querySelectorAll('.task-card').forEach(card => {
+			card.style.opacity = '0';
+			card.style.transform = 'translateY(20px)';
+			card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+			observer.observe(card);
+		});
+	</script>
+</body>
+</html>

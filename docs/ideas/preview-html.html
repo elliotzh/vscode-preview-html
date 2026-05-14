@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Preview HTML — VS Code Extension Idea</title>
+	<link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+	<style>
+		:root {
+			--pico-font-size: 16px;
+		}
+		body { padding: 2rem; }
+		.badge {
+			display: inline-block;
+			padding: 0.2em 0.6em;
+			border-radius: 4px;
+			font-size: 0.8em;
+			font-weight: 600;
+			background: var(--pico-primary-background);
+			color: var(--pico-primary-inverse);
+		}
+		.badge-muted {
+			background: var(--pico-secondary-background);
+			color: var(--pico-secondary-inverse);
+		}
+		.flow-diagram {
+			text-align: center;
+			padding: 2rem;
+			background: var(--pico-card-background-color);
+			border-radius: 8px;
+			margin: 1.5rem 0;
+		}
+		.flow-diagram svg { max-width: 100%; }
+		.assumption-list li { margin-bottom: 1rem; }
+		.not-doing { opacity: 0.7; }
+		details { margin-bottom: 1rem; }
+		summary { cursor: pointer; font-weight: 600; }
+		.hero {
+			text-align: center;
+			padding: 3rem 1rem;
+			margin-bottom: 2rem;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			border-radius: 12px;
+			color: white;
+		}
+		.hero h1 { color: white; margin-bottom: 0.5rem; }
+		.hero p { color: rgba(255,255,255,0.9); font-size: 1.2rem; }
+	</style>
+</head>
+<body>
+	<main class="container">
+		<div class="hero">
+			<h1>Preview HTML</h1>
+			<p>VS Code Extension — Idea Document</p>
+		</div>
+
+		<section>
+			<h2>Problem Statement</h2>
+			<blockquote>
+				How might we make viewing AI-generated HTML documents in VS Code as frictionless as reading a rendered page — <strong>preview-first, always current, no extra clicks?</strong>
+			</blockquote>
+		</section>
+
+		<section>
+			<h2>Recommended Direction</h2>
+			<p><span class="badge">Custom Editor (preview-first) with toggle to source</span></p>
+			<p>Register a <code>CustomTextEditorProvider</code> as the default editor for <code>.html</code> files. When a user opens any HTML file, they see the fully rendered preview — not raw markup.</p>
+			<p>A toolbar button in the editor title bar lets them toggle to the standard text editor when they need to inspect or edit source, and toggle back to preview with another click.</p>
+
+			<div class="flow-diagram">
+				<svg width="500" height="120" viewBox="0 0 500 120">
+					<defs>
+						<marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+							<polygon points="0 0, 10 3.5, 0 7" fill="#667eea"/>
+						</marker>
+					</defs>
+					<!-- Boxes -->
+					<rect x="10" y="35" width="120" height="50" rx="8" fill="#667eea" opacity="0.15" stroke="#667eea" stroke-width="2"/>
+					<text x="70" y="65" text-anchor="middle" font-size="14" font-weight="600" fill="#667eea">Open .html</text>
+
+					<rect x="190" y="35" width="120" height="50" rx="8" fill="#667eea" opacity="0.15" stroke="#667eea" stroke-width="2"/>
+					<text x="250" y="58" text-anchor="middle" font-size="14" font-weight="600" fill="#667eea">See Rendered</text>
+					<text x="250" y="75" text-anchor="middle" font-size="12" fill="#667eea">Preview</text>
+
+					<rect x="370" y="35" width="120" height="50" rx="8" fill="#764ba2" opacity="0.15" stroke="#764ba2" stroke-width="2"/>
+					<text x="430" y="58" text-anchor="middle" font-size="14" font-weight="600" fill="#764ba2">Toggle to</text>
+					<text x="430" y="75" text-anchor="middle" font-size="12" fill="#764ba2">Source (1 click)</text>
+
+					<!-- Arrows -->
+					<line x1="130" y1="60" x2="185" y2="60" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+					<line x1="310" y1="60" x2="365" y2="60" stroke="#667eea" stroke-width="2" marker-end="url(#arrow)"/>
+				</svg>
+			</div>
+
+			<p>This inverts the default paradigm: every other HTML preview extension treats source as primary. For AI-generated documentation, the rendered view <em>is</em> what you care about. Source is the escape hatch.</p>
+		</section>
+
+		<section>
+			<h2>Key Assumptions to Validate</h2>
+			<ul class="assumption-list">
+				<li>
+					<strong>Custom Editor coexistence</strong> — Users can seamlessly toggle between the custom editor and the built-in text editor via <code>vscode.openWith</code>.
+					<br><small>High confidence — this is a supported API pattern.</small>
+				</li>
+				<li>
+					<strong>File watcher responsiveness</strong> — When an external process writes to the HTML file, the preview updates fast enough to feel "live".
+					<br><small>Test with rapid multi-save scenarios.</small>
+				</li>
+				<li>
+					<strong>Relative asset resolution</strong> — Images, CSS, and JS with relative paths resolve correctly via <code>webview.asWebviewUri()</code>.
+					<br><small>Needs testing with nested folder structures.</small>
+				</li>
+				<li>
+					<strong>Users rarely edit these files</strong> — The toggle overhead (one click) is acceptable because the primary use case is <em>reading</em> rendered output.
+				</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>MVP Scope</h2>
+			<h3>In Scope</h3>
+			<table>
+				<thead>
+					<tr><th>Feature</th><th>Description</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Custom Editor registration</td><td>Default for <code>.html</code> files (configurable)</td></tr>
+					<tr><td>Rendered preview</td><td>Full HTML/CSS/JS execution in webview</td></tr>
+					<tr><td>Relative asset support</td><td>Resolve <code>./styles.css</code>, <code>./img/logo.png</code>, etc.</td></tr>
+					<tr><td>Live update</td><td>Debounced re-render (~300ms) on every change</td></tr>
+					<tr><td>Toggle button</td><td>"Show Source" / "Show Preview" in editor title bar</td></tr>
+					<tr><td>Theme-aware</td><td>Webview background matches VS Code theme</td></tr>
+					<tr><td>Security sandboxing</td><td><code>localResourceRoots</code> restricted to workspace</td></tr>
+				</tbody>
+			</table>
+
+			<h3>Technical Approach</h3>
+			<ul>
+				<li><code>CustomTextEditorProvider</code> with <code>retainContextWhenHidden: true</code></li>
+				<li><code>vscode.openWith(uri, 'default')</code> for toggling to text editor</li>
+				<li>Register with <code>priority: "default"</code> to win for <code>.html</code> files</li>
+				<li>File change detection via the <code>TextDocument</code> provided by Custom Editor API</li>
+			</ul>
+		</section>
+
+		<section class="not-doing">
+			<h2>Not Doing (and Why)</h2>
+			<details>
+				<summary>Embedded Monaco source editor inside the webview</summary>
+				<p>Adds massive complexity (losing native extensions, keybindings, language services) for marginal gain.</p>
+			</details>
+			<details>
+				<summary>Local dev server / proxy mode</summary>
+				<p>Out of scope for v1. This is for static HTML documents, not running apps.</p>
+			</details>
+			<details>
+				<summary>Multi-file dashboard / gallery view</summary>
+				<p>Cool for later, but the single-file preview is the core value.</p>
+			</details>
+			<details>
+				<summary>Visual diff between versions</summary>
+				<p>Interesting for agentic workflows but adds significant complexity.</p>
+			</details>
+			<details>
+				<summary>Script execution sandboxing (CSP)</summary>
+				<p>For v1, allow scripts to run. Revisit if security concerns arise from real usage.</p>
+			</details>
+		</section>
+
+		<section>
+			<h2>Open Questions</h2>
+			<ol>
+				<li>Register as default for <em>all</em> <code>.html</code> files, or only within specific folders?</li>
+				<li>Should there be a "pin" behavior (like Markdown preview's lock icon)?</li>
+				<li>How to handle HTML files that are clearly application code (Angular templates, etc.)?</li>
+				<li>Should the extension contribute a "Preview HTML" command to the palette?</li>
+			</ol>
+		</section>
+	</main>
+
+	<script>
+		// Add a subtle entrance animation
+		document.querySelectorAll('section').forEach((section, i) => {
+			section.style.opacity = '0';
+			section.style.transform = 'translateY(20px)';
+			section.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+			setTimeout(() => {
+				section.style.opacity = '1';
+				section.style.transform = 'translateY(0)';
+			}, 100 + i * 100);
+		});
+	</script>
+</body>
+</html>

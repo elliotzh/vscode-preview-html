@@ -1,0 +1,95 @@
+{
+	"name": "vscode-preview-html",
+	"displayName": "Preview HTML",
+	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
+	"version": "0.1.0",
+	"publisher": "Arcmantle",
+	"icon": "images/icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Arcmantle/vscode-preview-html"
+	},
+	"engines": {
+		"vscode": "^1.96.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"html",
+		"preview",
+		"render",
+		"viewer"
+	],
+	"activationEvents": [],
+	"main": "./dist/extension.js",
+	"scripts": {
+		"compile": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+		"compile:tests": "tsc -p tsconfig.test.json",
+		"pretest": "pnpm run compile && pnpm run compile:tests",
+		"test": "node ./dist/test/runTest.js",
+		"watch": "pnpm run compile -- --watch",
+		"build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --minify",
+		"package": "pnpm run build && vsce package"
+	},
+	"contributes": {
+		"commands": [
+			{
+				"command": "previewHtml.openSource",
+				"title": "Open Source",
+				"icon": "$(code)"
+			},
+			{
+				"command": "previewHtml.openPreview",
+				"title": "Open Preview",
+				"icon": "$(open-preview)"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "previewHtml.openSource",
+					"when": "activeCustomEditorId == previewHtml.preview",
+					"group": "navigation"
+				},
+				{
+					"command": "previewHtml.openPreview",
+					"when": "activeCustomEditorId != previewHtml.preview && resourceLangId == html",
+					"group": "navigation"
+				}
+			]
+		},
+		"customEditors": [
+			{
+				"viewType": "previewHtml.preview",
+				"displayName": "HTML Preview",
+				"selector": [
+					{
+						"filenamePattern": "*.html"
+					}
+				],
+				"priority": "default"
+			}
+		],
+		"configuration": {
+			"title": "Preview HTML",
+			"properties": {
+				"previewHtml.defaultEditor": {
+					"type": "boolean",
+					"default": true,
+					"description": "When true, HTML files open in the rendered preview by default. When false, HTML files open in the text editor (preview available via 'Reopen With')."
+				}
+			}
+		}
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.96.0",
+		"@vscode/test-electron": "^2.5.2",
+		"@vscode/vsce": "^3.0.0",
+		"esbuild": "^0.24.0",
+		"mocha": "^11.7.5",
+		"typescript": "^5.7.0"
+	}
+}
