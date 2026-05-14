@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import { HtmlPreviewEditorProvider } from './htmlPreviewEditorProvider';
+import { ServerManager } from './staticServer';
 
 export function activate(context: vscode.ExtensionContext) {
-	const provider = new HtmlPreviewEditorProvider(context);
+	const serverManager = new ServerManager();
+	context.subscriptions.push({ dispose: () => serverManager.dispose() });
+
+	const provider = new HtmlPreviewEditorProvider(context, serverManager);
 
 	context.subscriptions.push(
 		vscode.window.registerCustomEditorProvider(

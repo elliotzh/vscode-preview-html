@@ -2,7 +2,7 @@
 	"name": "vscode-preview-html",
 	"displayName": "Preview HTML",
 	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
-	"version": "0.1.1",
+	"version": "1.0.0",
 	"publisher": "Arcmantle",
 	"icon": "images/icon.png",
 	"repository": {
@@ -83,6 +83,7 @@
 		}
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.60.0",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^20.0.0",
 		"@types/vscode": "^1.96.0",
@@ -90,6 +91,7 @@
 		"@vscode/vsce": "^3.0.0",
 		"esbuild": "^0.24.0",
 		"mocha": "^11.7.5",
+		"playwright": "^1.60.0",
 		"typescript": "^5.7.0"
 	}
 }
