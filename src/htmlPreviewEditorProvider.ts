@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ServerManager } from './staticServer';
+import { minimatch } from './minimatch';
 
 export class HtmlPreviewEditorProvider implements vscode.CustomTextEditorProvider {
 	public static readonly viewType = 'previewHtml.preview';
@@ -21,6 +22,28 @@ export class HtmlPreviewEditorProvider implements vscode.CustomTextEditorProvide
 				vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
 			}, 0);
 			return;
+		}
+
+		const relativePath = vscode.workspace.asRelativePath(document.uri, false);
+
+		// ignorePaths takes priority — never auto-preview these
+		const ignorePaths = config.get<string[]>('ignorePaths', []);
+		if (ignorePaths.length > 0 && ignorePaths.some(p => minimatch(relativePath, p))) {
+			setTimeout(() => {
+				vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
+			}, 0);
+			return;
+		}
+
+		// If previewPaths is set, only auto-preview files matching those globs
+		const previewPaths = config.get<string[]>('previewPaths', []);
+		if (previewPaths.length > 0) {
+			if (!previewPaths.some(p => minimatch(relativePath, p))) {
+				setTimeout(() => {
+					vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
+				}, 0);
+				return;
+			}
 		}
 
 		webviewPanel.webview.options = { enableScripts: true };

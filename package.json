@@ -2,7 +2,7 @@
 	"name": "vscode-preview-html",
 	"displayName": "Preview HTML",
 	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"publisher": "Arcmantle",
 	"icon": "images/icon.png",
 	"repository": {
@@ -78,6 +78,18 @@
 					"type": "boolean",
 					"default": true,
 					"description": "When true, HTML files open in the rendered preview by default. When false, HTML files open in the text editor (preview available via 'Reopen With')."
+				},
+				"previewHtml.previewPaths": {
+					"type": "array",
+					"items": { "type": "string" },
+					"default": [],
+					"description": "Glob patterns for paths that should open in preview by default (e.g. '**/docs/**'). When empty, all HTML files are previewed. When set, only matching files auto-preview; others open as source."
+				},
+				"previewHtml.ignorePaths": {
+					"type": "array",
+					"items": { "type": "string" },
+					"default": [],
+					"description": "Glob patterns for paths that should never auto-preview (e.g. '**/node_modules/**'). Takes priority over previewPaths."
 				}
 			}
 		}
