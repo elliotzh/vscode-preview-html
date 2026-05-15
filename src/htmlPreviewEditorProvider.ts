@@ -11,11 +11,41 @@ export class HtmlPreviewEditorProvider implements vscode.CustomTextEditorProvide
 		private readonly serverManager: ServerManager,
 	) {}
 
+	private isInDiffContext(document: vscode.TextDocument): boolean {
+		// Non-file schemes (git:, gitlens:, vscode-scm:, etc.) indicate SCM original versions
+		if (document.uri.scheme !== 'file' && document.uri.scheme !== 'untitled') {
+			return true;
+		}
+
+		// Check if the document is part of any diff tab
+		for (const group of vscode.window.tabGroups.all) {
+			for (const tab of group.tabs) {
+				if (tab.input instanceof vscode.TabInputTextDiff) {
+					const { original, modified } = tab.input;
+					if (original.toString() === document.uri.toString() ||
+						modified.toString() === document.uri.toString()) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public async resolveCustomTextEditor(
 		document: vscode.TextDocument,
 		webviewPanel: vscode.WebviewPanel,
 		_token: vscode.CancellationToken
 	): Promise<void> {
+		// Disable preview in diff views — it breaks the diff experience
+		if (this.isInDiffContext(document)) {
+			setTimeout(() => {
+				vscode.commands.executeCommand('vscode.openWith', document.uri, 'default');
+			}, 0);
+			return;
+		}
+
 		const config = vscode.workspace.getConfiguration('previewHtml');
 		if (!config.get<boolean>('defaultEditor', true)) {
 			setTimeout(() => {

@@ -2,7 +2,7 @@
 	"name": "vscode-preview-html",
 	"displayName": "Preview HTML",
 	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"publisher": "Arcmantle",
 	"icon": "images/icon.png",
 	"repository": {
