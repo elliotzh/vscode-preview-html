@@ -2,7 +2,7 @@
 	"name": "vscode-preview-html",
 	"displayName": "Preview HTML",
 	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"publisher": "Arcmantle",
 	"icon": "images/icon.png",
 	"repository": {
@@ -43,6 +43,16 @@
 				"command": "previewHtml.openPreview",
 				"title": "Open Preview",
 				"icon": "$(open-preview)"
+			},
+			{
+				"command": "previewHtml.openInBrowser",
+				"title": "Preview HTML: Open in Browser",
+				"icon": "$(globe)"
+			},
+			{
+				"command": "previewHtml.openExternal",
+				"title": "Preview HTML: Open in External Browser",
+				"icon": "$(link-external)"
 			}
 		],
 		"menus": {
@@ -55,6 +65,11 @@
 				{
 					"command": "previewHtml.openPreview",
 					"when": "activeCustomEditorId != previewHtml.preview && resourceLangId == html",
+					"group": "navigation"
+				},
+				{
+					"command": "previewHtml.openInBrowser",
+					"when": "activeCustomEditorId == previewHtml.preview || resourceLangId == html",
 					"group": "navigation"
 				}
 			]
@@ -84,13 +99,17 @@
 				},
 				"previewHtml.previewPaths": {
 					"type": "array",
-					"items": { "type": "string" },
+					"items": {
+						"type": "string"
+					},
 					"default": [],
 					"description": "Glob patterns for paths that should open in preview by default (e.g. '**/docs/**'). When empty, all HTML files are previewed. When set, only matching files auto-preview; others open as source."
 				},
 				"previewHtml.ignorePaths": {
 					"type": "array",
-					"items": { "type": "string" },
+					"items": {
+						"type": "string"
+					},
 					"default": [],
 					"description": "Glob patterns for paths that should never auto-preview (e.g. '**/node_modules/**'). Takes priority over previewPaths."
 				}
