@@ -50,7 +50,9 @@ export function activate(context: vscode.ExtensionContext) {
 			const fileDir = path.dirname(uri.fsPath);
 			const fileName = path.basename(uri.fsPath);
 			const server = await serverManager.getServer(fileDir);
-			const url = `${server.baseUrl}${fileName}`;
+			// asExternalUri so the URL is reachable in remote/tunnel scenarios too
+			const baseUrl = (await vscode.env.asExternalUri(vscode.Uri.parse(server.baseUrl))).toString();
+			const url = `${baseUrl}${fileName}`;
 			vscode.commands.executeCommand('simpleBrowser.api.open', url);
 		})
 	);
@@ -63,7 +65,9 @@ export function activate(context: vscode.ExtensionContext) {
 			const fileDir = path.dirname(uri.fsPath);
 			const fileName = path.basename(uri.fsPath);
 			const server = await serverManager.getServer(fileDir);
-			const url = `${server.baseUrl}${fileName}`;
+			// asExternalUri so the URL is reachable in remote/tunnel scenarios too
+			const baseUrl = (await vscode.env.asExternalUri(vscode.Uri.parse(server.baseUrl))).toString();
+			const url = `${baseUrl}${fileName}`;
 			vscode.env.openExternal(vscode.Uri.parse(url));
 		})
 	);

@@ -81,7 +81,11 @@ export class HtmlPreviewEditorProvider implements vscode.CustomTextEditorProvide
 		const fileDir = path.dirname(document.uri.fsPath);
 		const fileName = path.basename(document.uri.fsPath);
 		const server = await this.serverManager.getServer(fileDir);
-		const baseUrl = server.baseUrl;
+		// Translate the loopback URL into one the webview can actually reach.
+		// On remote hosts (Remote-SSH, Tunnels, Codespaces, code-server) the webview
+		// renders on the client, so a bare http://127.0.0.1:<port> points at the wrong
+		// machine and the iframe comes up blank. asExternalUri forwards the port.
+		const baseUrl = (await vscode.env.asExternalUri(vscode.Uri.parse(server.baseUrl))).toString();
 
 		const updateWebview = () => {
 			// Point iframe at the local server — all paths resolve naturally

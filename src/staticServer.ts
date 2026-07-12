@@ -65,7 +65,12 @@ export class StaticServer {
 			}
 
 			const ext = path.extname(filePath).toLowerCase();
-			const contentType = MIME[ext] || 'application/octet-stream';
+			let contentType = MIME[ext] || 'application/octet-stream';
+			// Declare UTF-8 for text formats so non-ASCII content (e.g. CJK) isn't
+			// mojibake'd when the file itself omits a <meta charset> / BOM.
+			if (/^text\/|javascript|json|svg|xml/.test(contentType)) {
+				contentType += '; charset=utf-8';
+			}
 
 			const stream = fs.createReadStream(filePath);
 			stream.on('open', () => {
