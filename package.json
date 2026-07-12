@@ -2,7 +2,7 @@
 	"name": "vscode-preview-html",
 	"displayName": "Preview HTML",
 	"description": "Preview-first HTML viewer for VS Code. Opens HTML files as rendered pages by default, with one-click toggle to source.",
-	"version": "1.2.2",
+	"version": "1.3.0",
 	"publisher": "Arcmantle",
 	"icon": "images/icon.png",
 	"repository": {
@@ -92,6 +92,19 @@
 		"configuration": {
 			"title": "Preview HTML",
 			"properties": {
+				"previewHtml.renderMode": {
+					"type": "string",
+					"enum": [
+						"inline",
+						"server"
+					],
+					"enumDescriptions": [
+						"Render the HTML directly into the preview. Text is selectable and copyable. Best for static/text-heavy pages; live JS, fetch, and ES modules do not run.",
+						"Serve the file over a local http server and embed it in an iframe. Full fidelity (JS, fetch, ES modules) but VS Code blocks copying text out of the nested iframe."
+					],
+					"default": "inline",
+					"description": "How HTML is rendered in the preview. 'inline' is copyable but static; 'server' is full-fidelity but text cannot be copied."
+				},
 				"previewHtml.defaultEditor": {
 					"type": "boolean",
 					"default": true,
